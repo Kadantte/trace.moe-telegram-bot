@@ -14,10 +14,12 @@ https://user-images.githubusercontent.com/1979746/126060529-8a33523a-967b-48de-9
 
 ## Features
 
-- Show anime titles in multiple languages
-- Telegram group support
-- Image, GIF, Video, URL support (stickers are not supported)
+- Show anime titles, episode, and timestamp from trace.moe
+- Image, GIF, Video, Stickers, URL support
 - Video preview
+- Supported Languages: English, Japanese, Chinese (Simplified & Traditional)
+- Telegram group support
+- Guest Mode support
 
 ## How to use
 
@@ -27,13 +29,28 @@ https://user-images.githubusercontent.com/1979746/126060529-8a33523a-967b-48de-9
 4. The bot will tell you the anime, episode, and time code of it
 5. It will also send you a video preview of that scene
 
+### Search Options
+
+When sending or replying with an image, you can include optional keywords in your message text or caption:
+
+- `mute`: Mutes the audio of the generated preview video.
+- `nocrop`: Disables automatic border cropping before searching.
+- `skip`: Skips generating the preview video and returns only the text search result.
+
+Example: `@WhatAnimeBot mute nocrop` or captioning an image with `skip`.
+
+### Bot Commands
+
+- `/help`: Get help and info on how to use the bot
+- `/lang` or `/setlang`: Change preferred language (English, 日本語, 繁體中文, 简体中文, or Auto)
+
 ## How to use (in group)
 
-1. Add the bot `@WhatAnimeBot` to your group
-2. Reply to any group image, mention the bot with `@WhatAnimeBot`
-3. Wait for the bot to reply
+1. In a group, reply to an anime screenshot and mention the bot with `@WhatAnimeBot`
+2. The bot will reply with the anime information
+3. (Optional) If you want auto-complete when typing `@WhatAnimeBot`, you can add the bot to your group
 
-_Note that the bot has no access to your messages before it is added to your group_
+> **Note**: The bot will have access to your group messages when it is added to your group.
 
 ## How to host the bot on your own
 
@@ -49,17 +66,10 @@ You need to disable [Privacy Mode](https://core.telegram.org/bots#privacy-mode) 
 TELEGRAM_TOKEN=       # e.g. 111111111:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 TELEGRAM_WEBHOOK=     # e.g. https://your.host.com/
 PORT=                 # (optional) Default: 3000
+ADDR=                 # (optional) Default: 0.0.0.0
 TRACE_MOE_KEY=        # (optional)
-ANILIST_API_URL=      # (optional) Default: https://graphql.anilist.co/
+FILTER_ADULT=         # (optional) Default: true
 ```
-
-### Deploy to Heroku
-
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/soruly/trace.moe-telegram-bot)
-
-### Deploy on Railway
-
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https%3A%2F%2Fgithub.com%2Fsoruly%2Ftrace.moe-telegram-bot&envs=TELEGRAM_TOKEN%2CTRACE_MOE_KEY&optionalEnvs=TRACE_MOE_KEY&TELEGRAM_TOKENDesc=Create+a+Telegram+Bot+to+get+a+token%2C+see%3A+https%3A%2F%2Fcore.telegram.org%2Fbots&TRACE_MOE_KEYDesc=Leave+this+blank+or+Enter+your+trace.moe+API+Key+to+unlock+search+quota+and+limits.+see%3A+https%3A%2F%2Fsoruly.github.io%2Ftrace.moe-api%2F%23%2Flimits&TELEGRAM_TOKENDefault=111111111%3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA)
 
 ### Host with docker
 
@@ -78,7 +88,7 @@ Note that you need to configure a reverse proxy if you need HTTPS.
 
 ### Host bare-metal with Node.js
 
-Install Node.js 18.x, then:
+Install Node.js >= 22.18, then:
 
 ```
 git clone https://github.com/soruly/trace.moe-telegram-bot.git
@@ -90,21 +100,27 @@ npm install
 - Edit `.env` as you need
 
 ```
-node server.js
+npm start
 ```
 
-### Host bare-metal with pm2
+### Run as systemd
 
-You also can use [pm2](https://pm2.keymetrics.io/) to run this in background in cluster mode.
-
-Use below commands to start / restart / stop server.
+Put this file to `/etc/systemd/system/trace.moe-telegram-bot.service`
 
 ```
-npm run start
-npm run stop
-npm run reload
-npm run restart
-npm run delete
-```
+[Unit]
+Description=trace.moe-telegram-bot
+Wants=network-online.target
+After=network-online.target
 
-To change the number of nodejs instances, edit ecosystem.config.json
+[Service]
+User=____
+Group=____
+WorkingDirectory=/home/____/project/trace.moe-telegram-bot
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node --dns-result-order=ipv6first /home/____/project/trace.moe-telegram-bot/server.ts
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
